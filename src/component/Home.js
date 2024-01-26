@@ -64,7 +64,7 @@ export const Home = () => {
   return (
     <div className="App">
       <div className="container">
-        <CustomWebcam sendImage={sendImage} />
+        <CustomWebcam sendImage={sendImage} setUploadResultMessage={setUploadResultMessage} setAuth={setAuth} />
       </div>
       <h2>LeMinhNghia's Facial Recognition System</h2>
       {/* <div>

@@ -1,7 +1,7 @@
 import Webcam from "react-webcam";
 import { useCallback, useRef, useState } from "react";
 
-const CustomWebcam = ({ sendImage }) => {
+const CustomWebcam = ({ sendImage, setUploadResultMessage, setAuth }) => {
   const webcamRef = useRef(null);
   const [imgSrc, setImgSrc] = useState(null);
   const [mirrored, setMirrored] = useState(false);
@@ -30,6 +30,8 @@ const CustomWebcam = ({ sendImage }) => {
 
   const retake = () => {
     setImgSrc(null);
+    setUploadResultMessage('Please upload an image to authentication.');
+    setAuth(false);
   };
 
   return (
