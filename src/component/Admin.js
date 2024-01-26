@@ -24,6 +24,17 @@ export const Admin = () => {
             },
             body: image
         })
+        .then(response => {
+            if (response.ok) {
+                setUploadResultMessage('Image submitted successfully.');
+            } else {
+                setUploadResultMessage('Failed to submit image.');
+            }
+        })
+        .catch(error => {
+            console.error(error);
+            setUploadResultMessage('An error occurred while submitting the image.');
+        });
     }
 
     return (
@@ -31,7 +42,8 @@ export const Admin = () => {
             <h2>Admin Upload Register Image</h2>
             <input type="file" name="image" onChange={handleImage} />
             <button onClick={handleApi}>Submit</button>
+            <p>{uploadResultMessage}</p>
         </div>
     );
-};
+}
 
