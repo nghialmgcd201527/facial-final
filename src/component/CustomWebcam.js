@@ -1,24 +1,41 @@
 import Webcam from "react-webcam";
 import { useCallback, useRef, useState } from "react";
 
-const CustomWebcam = () => {
-    const webcamRef = useRef(null);
-    const [imgSrc, setImgSrc] = useState(null);
-    const [mirrored, setMirrored] = useState(false);
+const CustomWebcam = ({ sendImage }) => {
+  const webcamRef = useRef(null);
+  const [imgSrc, setImgSrc] = useState(null);
+  const [mirrored, setMirrored] = useState(false);
 
-    const capture = useCallback(() => {
-        const imageSrc = webcamRef.current.getScreenshot();
-        setImgSrc(imageSrc);
-    }, [webcamRef]);
+  function dataURLtoFile(dataurl, filename) {
+    var arr = dataurl.split(','),
+      mime = arr[0].match(/:(.*?);/)[1],
+      bstr = atob(arr[arr.length - 1]),
+      n = bstr.length,
+      u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], filename, { type: mime });
+  }
 
-    const retake = () => {
-        setImgSrc(null);
-      };
 
-    return (
-        <div className="container">
-            <h1>Webcam</h1>
-            {imgSrc ? (
+  const capture = useCallback(() => {
+    const imageSrc = webcamRef.current.getScreenshot();
+    setImgSrc(imageSrc);
+
+    const file = dataURLtoFile(imageSrc, 'image.jpg');
+    sendImage(file);
+
+  }, [webcamRef]);
+
+  const retake = () => {
+    setImgSrc(null);
+  };
+
+  return (
+    <div className="container">
+      <h1>Webcam</h1>
+      {imgSrc ? (
         <img src={imgSrc} alt="webcam" />
       ) : (
         <Webcam height={600} width={600} ref={webcamRef} mirrored={mirrored} screenshotFormat="image/jpeg" />
@@ -40,8 +57,8 @@ const CustomWebcam = () => {
           <button onClick={capture}>Capture photo</button>
         )}
       </div>
-        </div>
-    );
+    </div>
+  );
 };
 
 export default CustomWebcam;
