@@ -1,0 +1,42 @@
+version: 0.2
+
+env:
+  secrets-manager:
+    SONAR_URL: $AWS_SECRET_ARN:SONAR_URL
+    SONAR_TOKEN: $AWS_SECRET_ARN:SONAR_TOKEN
+    SONAR_PROJECT_KEY: $AWS_SECRET_ARN:SONAR_PROJECT_KEY
+    USERNAME_DOCKER: $AWS_SECRET_ARN:USERNAME_DOCKER
+    PASSWORD_DOCKER: $AWS_SECRET_ARN:PASSWORD_DOCKER
+    SLACK_IDS: $AWS_SECRET_ARN:SLACK_IDS
+    SLACK_WEBHOOKS: $AWS_SECRET_ARN:SLACK_WEBHOOKS
+    STAGE_SONARQUBE: $AWS_SECRET_ARN:STAGE_SONARQUBE
+    STAGE: $AWS_SECRET_ARN:STAGE
+phases:
+  install:
+    runtime-versions:
+      nodejs: 18
+    commands:
+      # Copy odc reports
+      - echo $CODEBUILD_SRC_DIR_sastout_facialrecognitionrepo
+      - |
+        if ! [ -z ${CODEBUILD_SRC_DIR_sastout_facialrecognitionrepo+x} ] ; then
+          cp -R $CODEBUILD_SRC_DIR_sastout_facialrecognitionrepo/report $CODEBUILD_SRC_DIR
+        fi
+  build:
+    commands:
+      # - cd $CODEBUILD_SRC_DIR
+      - docker login --username ${USERNAME_DOCKER} --password ${PASSWORD_DOCKER}
+      - |
+        docker run \
+        --rm \
+        -e SONAR_HOST_URL="${SONAR_URL}" \
+        -e SONAR_SCANNER_OPTS="-Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.sources=. -Dsonar.exclusions=report/** -Dsonar.dependencyCheck.htmlReportPath=report/dependency-check-report.html" \
+        -e SONAR_TOKEN=${SONAR_TOKEN} \
+        -v "$(pwd):/usr/src" \
+        sonarsource/sonar-scanner-cli
+      - echo "build stage completed"
+  post_build:
+    commands:
+      - echo $CODEBUILD_BUILD_SUCCEEDING
+      - echo $SLACK_IDS
+      - bash binsonarqube/build-notify.sh $CODEBUILD_BUILD_SUCCEEDING 0 $STAGE_SONARQUBE $SLACK_WEBHOOKS

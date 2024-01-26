@@ -1,0 +1,24 @@
+version: 0.2
+env:
+  secrets-manager:
+    SLACK_IDS: $AWS_SECRET_ARN:SLACK_IDS
+    SLACK_WEBHOOKS: $AWS_SECRET_ARN:SLACK_WEBHOOKS
+    STAGE: $AWS_SECRET_ARN:STAGE
+    S3_WEB_URL: $AWS_SECRET_ARN:S3_WEB_URL
+phases: 
+  install:
+    commands:
+      - echo "Installing dependencies..."
+      - npm install
+      - printenv
+  build:
+    commands:
+      - echo "Building the React project..."
+      - npm run build
+  post_build:
+    commands:
+      - echo "Uploading files to S3 bucket..."
+      - aws s3 sync build/ $S3_WEB_URL --delete
+      - echo $CODEBUILD_BUILD_SUCCEEDING
+      - echo $SLACK_IDS
+      - bash bin/build-notify.sh $CODEBUILD_BUILD_SUCCEEDING 0 $STAGE $SLACK_WEBHOOKS
